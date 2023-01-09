@@ -1,3 +1,2 @@
-var x=10;
-alert('Текст');
-alert(x);
+let name = prompt('What`s your name?');
+alert(`Hello, ${name} How are you?`);
