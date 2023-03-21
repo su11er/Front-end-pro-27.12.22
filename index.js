@@ -1,58 +1,24 @@
-﻿class Student {
-    constructor(firstName, lastName, birthDay, marks) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.birthDay = birthDay;
-        this.marks = marks;
-        this.absence = new Array(25);
-        this.absenceIndex = 0;
-        this.age = this.getAge(birthDay);
-        this.averageMark = this.marks.reduce((r, m) => r + m) / this.marks.length;
-        this.presenceFactor = 0.9;
-        this.goodMarksMin = 90;
-        this.results = {
-            BAD: "Редиска!",
-            NORMAL: "Добре, але можна краще.",
-            GOOD: "Молодець!"
-        };
-    }
+﻿const addBtn = document.querySelector('#add-btn');
+const removeBtn = document.querySelector('#remove-btn');
+const container = document.querySelector('#container');
 
-    absent() {
-        if (this.absence.length > this.absenceIndex) {
-            this.absence[this.absenceIndex] = false;
-            this.absenceIndex++;
-        }
-    };
+let count = 0;
 
-    present() {
-        if (this.absence.length > this.absenceIndex) {
-            this.absence[this.absenceIndex] = true;
-            this.absenceIndex++;
-        }
-    };
+addBtn.addEventListener('click', () => {
+  count++;
+  const textDiv = document.createElement('div');
+  textDiv.textContent = `Добавленный div ${count}`;
+  textDiv.id = `text-div-${count}`;
+  container.appendChild(textDiv);
 
-    get averagePresence() {
-        let precenceCount = this.absence.slice(0, this.absenceIndex).filter(x => x).length;
-        return precenceCount / this.absenceIndex;
-    }    
+  textDiv.addEventListener('click', () => {
+    textDiv.classList.toggle('active');
+  });
+});
 
-    getAge(dateString) {
-        let today = new Date();
-        let birthDate = new Date(dateString);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        let m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age;
-    }
-
-    summary() {
-        if (this.averageMark < this.goodMarksMin && this.averagePresence < this.presenceFactor) {
-            console.log(this.results.BAD);
-        } else if (this.averageMark < this.goodMarksMin || this.averagePresence < this.presenceFactor)
-            console.log(this.results.NORMAL);
-        else
-            console.log(this.results.GOOD);
-    }
-}
+removeBtn.addEventListener('click', () => {
+  const lastDiv = container.lastElementChild;
+  if (lastDiv.id.startsWith('text-div-')) {
+    container.removeChild(lastDiv);
+  }
+});
