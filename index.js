@@ -1,4 +1,4 @@
-class Student {
+﻿class Student {
     constructor(firstName, lastName, birthDay, marks) {
         this.firstName = firstName;
         this.lastName = lastName;
