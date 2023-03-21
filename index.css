@@ -1,0 +1,29 @@
+
+  #container {
+    width: 300px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #ccc;
+    color: #fff;
+    border: none;
+    margin: 10px;
+    cursor: pointer;
+  }
+  
+  #text-div {
+    padding: 20px;
+    background-color: #eee;
+    margin-top: 20px;
+    cursor: pointer;
+  }
+  
+  #text-div.active {
+    background-color: #f00;
+  }
+
