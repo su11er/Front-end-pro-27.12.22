@@ -1,180 +1,94 @@
-import React, { useReducer, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const INITIAL_STATE = {
-  size: null,
-  filling: null,
-  toppings: {
-    spice: false,
-    mayo: false,
-  },
-};
+const Contacts = () => {
+  const [contacts, setContacts] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
+  const [phone, setPhone] = useState('');
 
-function reducer(state, action) {
-  switch (action.type) {
-    case 'SET_SIZE':
-      return {
-        ...state,
-        size: action.payload,
-      };
-    case 'SET_FILLING':
-      return {
-        ...state,
-        filling: action.payload,
-      };
-    case 'TOGGLE_TOPPING':
-      return {
-        ...state,
-        toppings: {
-          ...state.toppings,
-          [action.payload]: !state.toppings[action.payload],
-        },
-      };
-    default:
-      return state;
-  }
-}
+  useEffect(() => {
+    fetchContacts();
+  }, []);
 
-function Burger() {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-  const [price, setPrice] = useState(0);
-  const [calories, setCalories] = useState(0);
-
-  function calculatePriceAndCalories() {
-    let totalPrice = 0;
-    let totalCalories = 0;
-
-    if (state.size === 'small') {
-      totalPrice += 50;
-      totalCalories += 20;
-    } else if (state.size === 'large') {
-      totalPrice += 100;
-      totalCalories += 40;
+  const fetchContacts = async () => {
+    try {
+      const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+      setContacts(response.data);
+    } catch (error) {
+      console.error(error);
     }
+  };
 
-    if (state.filling === 'cheese') {
-      totalPrice += 10;
-      totalCalories += 20;
-    } else if (state.filling === 'salad') {
-      totalPrice += 20;
-      totalCalories += 5;
-    } else if (state.filling === 'potato') {
-      totalPrice += 15;
-      totalCalories += 10;
-    }
+  const deleteContact = (id) => {
+    setContacts((prevContacts) => prevContacts.filter((contact) => contact.id !== id));
+  };
 
-    if (state.toppings.spice) {
-      totalPrice += 15;
-    }
+  const saveContact = () => {
+    const newContact = {
+      id: contacts.length + 1,
+      name,
+      surname,
+      phone,
+    };
 
-    if (state.toppings.mayo) {
-      totalPrice += 20;
-      totalCalories += 5;
-    }
+    setContacts((prevContacts) => [...prevContacts, newContact]);
+    setName('');
+    setSurname('');
+    setPhone('');
+    setShowForm(false);
+  };
 
-    setPrice(totalPrice);
-    setCalories(totalCalories);
-  }
+  const renderContacts = () => {
+    return contacts.map((contact) => (
+      <tr key={contact.id}>
+        <td>{contact.name}</td>
+        <td>{contact.surname}</td>
+        <td>{contact.phone}</td>
+        <td>
+          <button onClick={() => deleteContact(contact.id)}>Видалити</button>
+        </td>
+      </tr>
+    ));
+  };
 
   return (
     <div>
-      <h2>Burger</h2>
-      <div>
-        <label>
-          <input
-            type="radio"
-            name="size"
-            value="small"
-            checked={state.size === 'small'}
-            onChange={(e) =>
-              dispatch({ type: 'SET_SIZE', payload: e.target.value })
-            }
-          />
-          Small
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="size"
-            value="large"
-            checked={state.size === 'large'}
-            onChange={(e) =>
-              dispatch({ type: 'SET_SIZE', payload: e.target.value })
-          }
-          />
-        Large
-      </label>
+      <h2>Список контактів</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Ім'я</th>
+            <th>Прізвище</th>
+            <th>Телефон</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>{renderContacts()}</tbody>
+      </table>
+      {showForm ? (
+        <div>
+          <h2>Форма контакту</h2>
+          <form>
+            <label>Ім'я:</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            <br />
+            <label>Прізвище:</label>
+            <input type="text" value={surname} onChange={(e) => setSurname(e.target.value)} />
+            <br />
+            <label>Телефон:</label>
+            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <br />
+            <button type="button" onClick={saveContact}>Зберегти</button>
+            <button type="button" onClick={() => setShowForm(false)}>Скасувати</button>
+          </form>
+        </div>
+      ) : (
+        <button onClick={() => setShowForm(true)}>Додати контакт</button>
+      )}
     </div>
-    <div>
-      <label>
-        <input
-          type="radio"
-          name="filling"
-          value="cheese"
-          checked={state.filling === 'cheese'}
-          onChange={(e) =>
-            dispatch({ type: 'SET_FILLING', payload: e.target.value })
-          }
-        />
-        Cheese
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="filling"
-          value="salad"
-          checked={state.filling === 'salad'}
-          onChange={(e) =>
-            dispatch({ type: 'SET_FILLING', payload: e.target.value })
-          }
-        />
-        Salad
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="filling"
-          value="potato"
-          checked={state.filling === 'potato'}
-          onChange={(e) =>
-            dispatch({ type: 'SET_FILLING', payload: e.target.value })
-          }
-        />
-        Potato
-      </label>
-    </div>
-    <div>
-      <label>
-        <input
-          type="checkbox"
-          name="toppings"
-          value="spice"
-          checked={state.toppings.spice}
-          onChange={(e) =>
-            dispatch({ type: 'TOGGLE_TOPPING', payload: 'spice' })
-          }
-        />
-        Spice
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="toppings"
-          value="mayo"
-          checked={state.toppings.mayo}
-          onChange={(e) =>
-            dispatch({ type: 'TOGGLE_TOPPING', payload: 'mayo' })
-          }
-        />
-        Mayo
-      </label>
-    </div>
-    <button onClick={calculatePriceAndCalories}>Calculate</button>
-    <div>
-      <p>Price: {price} тугриків</p>
-      <p>Calories: {calories} калорій</p>
-    </div>
-  </div>
-);
-}
+  );
+};
 
-export default Burger;  
+export default Contacts;
