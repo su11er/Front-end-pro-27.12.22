@@ -1,94 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
-const Contacts = () => {
-  const [contacts, setContacts] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [phone, setPhone] = useState('');
+function UserList() {
+  const [users, setUsers] = useState([]);
+  const [albums, setAlbums] = useState([]);
+  const [photos, setPhotos] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
 
   useEffect(() => {
-    fetchContacts();
+    // Отримання списку користувачів
+    fetch('https://jsonplaceholder.typicode.com/users')
+      .then(response => response.json())
+      .then(data => setUsers(data))
+      .catch(error => console.log(error));
   }, []);
 
-  const fetchContacts = async () => {
-    try {
-      const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-      setContacts(response.data);
-    } catch (error) {
-      console.error(error);
-    }
+  const fetchAlbums = (userId) => {
+    // Отримання списку альбомів для вибраного користувача
+    fetch(`https://jsonplaceholder.typicode.com/albums?userId=${userId}`)
+      .then(response => response.json())
+      .then(data => setAlbums(data))
+      .catch(error => console.log(error));
   };
 
-  const deleteContact = (id) => {
-    setContacts((prevContacts) => prevContacts.filter((contact) => contact.id !== id));
+  const fetchPhotos = (albumId) => {
+    // Отримання списку фотографій для вибраного альбому
+    fetch(`https://jsonplaceholder.typicode.com/photos?albumId=${albumId}`)
+      .then(response => response.json())
+      .then(data => setPhotos(data))
+      .catch(error => console.log(error));
   };
 
-  const saveContact = () => {
-    const newContact = {
-      id: contacts.length + 1,
-      name,
-      surname,
-      phone,
-    };
-
-    setContacts((prevContacts) => [...prevContacts, newContact]);
-    setName('');
-    setSurname('');
-    setPhone('');
-    setShowForm(false);
+  const handleUserClick = (userId) => {
+    setSelectedUser(userId);
+    setSelectedAlbum(null);
+    setAlbums([]);
+    setPhotos([]);
+    fetchAlbums(userId);
   };
 
-  const renderContacts = () => {
-    return contacts.map((contact) => (
-      <tr key={contact.id}>
-        <td>{contact.name}</td>
-        <td>{contact.surname}</td>
-        <td>{contact.phone}</td>
-        <td>
-          <button onClick={() => deleteContact(contact.id)}>Видалити</button>
-        </td>
-      </tr>
-    ));
+  const handleAlbumClick = (albumId) => {
+    setSelectedAlbum(albumId);
+    setPhotos([]);
+    fetchPhotos(albumId);
   };
 
   return (
     <div>
-      <h2>Список контактів</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Ім'я</th>
-            <th>Прізвище</th>
-            <th>Телефон</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>{renderContacts()}</tbody>
-      </table>
-      {showForm ? (
-        <div>
-          <h2>Форма контакту</h2>
-          <form>
-            <label>Ім'я:</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-            <br />
-            <label>Прізвище:</label>
-            <input type="text" value={surname} onChange={(e) => setSurname(e.target.value)} />
-            <br />
-            <label>Телефон:</label>
-            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            <br />
-            <button type="button" onClick={saveContact}>Зберегти</button>
-            <button type="button" onClick={() => setShowForm(false)}>Скасувати</button>
-          </form>
+      <h1>Список користувачів</h1>
+      {users.map(user => (
+        <div key={user.id}>
+          <p>{user.name}</p>
+          <button onClick={() => handleUserClick(user.id)}>Album</button>
+          {selectedUser === user.id && (
+            <ul>
+              {albums.map(album => (
+                <li key={album.id}>
+                  {album.title}
+                  <button onClick={() => handleAlbumClick(album.id)}>Photos</button>
+                  {selectedAlbum === album.id && (
+                    <ul>
+                      {photos.map(photo => (
+                        <li key={photo.id}>
+                          <img src={photo.thumbnailUrl} alt={photo.title} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      ) : (
-        <button onClick={() => setShowForm(true)}>Додати контакт</button>
-      )}
+      ))}
     </div>
   );
-};
+}
 
-export default Contacts;
+export default UserList;
