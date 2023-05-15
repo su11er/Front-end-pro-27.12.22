@@ -1,80 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function UserList() {
-  const [users, setUsers] = useState([]);
-  const [albums, setAlbums] = useState([]);
-  const [photos, setPhotos] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedAlbum, setSelectedAlbum] = useState(null);
+function App() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    // Отримання списку користувачів
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response => response.json())
-      .then(data => setUsers(data))
-      .catch(error => console.log(error));
-  }, []);
-
-  const fetchAlbums = (userId) => {
-    // Отримання списку альбомів для вибраного користувача
-    fetch(`https://jsonplaceholder.typicode.com/albums?userId=${userId}`)
-      .then(response => response.json())
-      .then(data => setAlbums(data))
-      .catch(error => console.log(error));
+  const handleNameChange = (event) => {
+    setName(event.target.value);
   };
 
-  const fetchPhotos = (albumId) => {
-    // Отримання списку фотографій для вибраного альбому
-    fetch(`https://jsonplaceholder.typicode.com/photos?albumId=${albumId}`)
-      .then(response => response.json())
-      .then(data => setPhotos(data))
-      .catch(error => console.log(error));
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
   };
 
-  const handleUserClick = (userId) => {
-    setSelectedUser(userId);
-    setSelectedAlbum(null);
-    setAlbums([]);
-    setPhotos([]);
-    fetchAlbums(userId);
+  const handlePhoneChange = (event) => {
+    setPhone(event.target.value);
   };
 
-  const handleAlbumClick = (albumId) => {
-    setSelectedAlbum(albumId);
-    setPhotos([]);
-    fetchPhotos(albumId);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (name === '' || email === '' || phone === '') {
+      setErrorMessage('Будь ласка, заповніть всі поля');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.match(emailRegex)) {
+      setErrorMessage('Будь ласка, введіть коректну електронну пошту');
+      return;
+    }
+
+    const phoneRegex = /^\d{12}$/;
+    if (!phone.match(phoneRegex)) {
+      setErrorMessage('Будь ласка, введіть коректний телефонний номер (12 цифр)');
+      return;
+    }
+
+    setErrorMessage('');
   };
 
   return (
     <div>
-      <h1>Список користувачів</h1>
-      {users.map(user => (
-        <div key={user.id}>
-          <p>{user.name}</p>
-          <button onClick={() => handleUserClick(user.id)}>Album</button>
-          {selectedUser === user.id && (
-            <ul>
-              {albums.map(album => (
-                <li key={album.id}>
-                  {album.title}
-                  <button onClick={() => handleAlbumClick(album.id)}>Photos</button>
-                  {selectedAlbum === album.id && (
-                    <ul>
-                      {photos.map(photo => (
-                        <li key={photo.id}>
-                          <img src={photo.thumbnailUrl} alt={photo.title} />
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+      <h1>Форма</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Ім'я:</label>
+          <input type="text" value={name} onChange={handleNameChange} />
         </div>
-      ))}
+        <div>
+          <label>Електронна пошта:</label>
+          <input type="email" value={email} onChange={handleEmailChange} />
+        </div>
+        <div>
+          <label>Телефон:</label>
+          <input type="tel" value={phone} onChange={handlePhoneChange} />
+        </div>
+        {errorMessage && <p>{errorMessage}</p>}
+        <button type="submit">Відправити</button>
+      </form>
     </div>
   );
 }
 
-export default UserList;
+export default App;
