@@ -1,67 +1,58 @@
 import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import { addTodo, toggleTodo } from './store/actions/todoActions';
 
-function App() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+const App = ({ todos, addTodo, toggleTodo }) => {
+  const [inputValue, setInputValue] = useState('');
 
-  const handleNameChange = (event) => {
-    setName(event.target.value);
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
   };
 
-  const handleEmailChange = (event) => {
-    setEmail(event.target.value);
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (inputValue.trim() !== '') {
+      addTodo(inputValue);
+      setInputValue('');
+    }
   };
 
-  const handlePhoneChange = (event) => {
-    setPhone(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (name === '' || email === '' || phone === '') {
-      setErrorMessage('Будь ласка, заповніть всі поля');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.match(emailRegex)) {
-      setErrorMessage('Будь ласка, введіть коректну електронну пошту');
-      return;
-    }
-
-    const phoneRegex = /^\d{12}$/;
-    if (!phone.match(phoneRegex)) {
-      setErrorMessage('Будь ласка, введіть коректний телефонний номер (12 цифр)');
-      return;
-    }
-
-    setErrorMessage('');
+  const handleTodoClick = (id) => {
+    toggleTodo(id);
   };
 
   return (
     <div>
-      <h1>Форма</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Ім'я:</label>
-          <input type="text" value={name} onChange={handleNameChange} />
-        </div>
-        <div>
-          <label>Електронна пошта:</label>
-          <input type="email" value={email} onChange={handleEmailChange} />
-        </div>
-        <div>
-          <label>Телефон:</label>
-          <input type="tel" value={phone} onChange={handlePhoneChange} />
-        </div>
-        {errorMessage && <p>{errorMessage}</p>}
-        <button type="submit">Відправити</button>
+      <ul>
+        {todos.map(todo => (
+          <li
+            key={todo.id}
+            style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+            onClick={() => handleTodoClick(todo.id)}
+          >
+            {todo.text}
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={handleFormSubmit}>
+        <input type="text" value={inputValue} onChange={handleInputChange} />
+        <button type="submit">Add Todo</button>
       </form>
     </div>
   );
-}
+};
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+    todos: state.todos
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    addTodo: (todo) => dispatch(addTodo(todo)),
+    toggleTodo: (id) => dispatch(toggleTodo(id))
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
